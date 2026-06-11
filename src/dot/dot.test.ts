@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { parseDotSource } from './parseDot'
 import { parseModelLabel, parseClusterLabel, parsePlainLabel } from './htmlLabel'
 import { classifyEdge, inheritanceTypeFromLabel } from './edgeKind'
-import { buildGraph } from './buildGraph'
+import { buildGraph, inferAppFromId } from './buildGraph'
 
 const USER_LABEL =
   '<TABLE BGCOLOR="white" BORDER="0" CELLBORDER="0" CELLSPACING="0">' +
@@ -171,5 +171,43 @@ describe('buildGraph', () => {
     const graph = buildGraph(parseDotSource('digraph g { a -> b; }'))
     expect(graph.order).toBe(2)
     expect(graph.getNodeAttribute('a', 'label')).toBe('a')
+  })
+
+  it('infers apps from node ids when the file has no clusters', () => {
+    const graph = buildGraph(parseDotSource(`digraph model_graph {
+      django_contrib_auth_models_Permission [label="Permission"]
+      shop_models_Order [label="Order"]
+      shop_models_OrderLine [label="OrderLine"]
+      shop_models_Order -> django_contrib_auth_models_Permission
+      shop_models_Order -> shop_models_legacy_Discount
+    }`))
+    expect(graph.getNodeAttribute('django_contrib_auth_models_Permission', 'app')).toBe('django_contrib_auth')
+    expect(graph.getNodeAttribute('shop_models_Order', 'appLabel')).toBe('shop')
+    // same app → same color, different app → different color
+    const color = (id: string) => graph.getNodeAttribute(id, 'color')
+    expect(color('shop_models_Order')).toBe(color('shop_models_OrderLine'))
+    expect(color('shop_models_Order')).not.toBe(color('django_contrib_auth_models_Permission'))
+    // undeclared edge endpoints get inferred apps too
+    expect(graph.getNodeAttribute('shop_models_legacy_Discount', 'app')).toBe('shop')
+  })
+
+  it('does not infer apps when any cluster exists', () => {
+    const lone = buildGraph(parseDotSource(`digraph g {
+      subgraph cluster_a { a_models_X }
+      b_models_Y
+    }`))
+    expect(lone.getNodeAttribute('b_models_Y', 'app')).toBeNull()
+  })
+})
+
+describe('inferAppFromId', () => {
+  it('takes the prefix before the first models module', () => {
+    expect(inferAppFromId('django_contrib_auth_models_Permission')).toBe('django_contrib_auth')
+    expect(inferAppFromId('shop_models_base_BaseModel')).toBe('shop')
+  })
+
+  it('returns null when no models segment or empty prefix', () => {
+    expect(inferAppFromId('SomeNode')).toBeNull()
+    expect(inferAppFromId('models_Thing')).toBeNull()
   })
 })

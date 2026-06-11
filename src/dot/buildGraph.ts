@@ -14,9 +14,24 @@ function curvatureFor(index: number): number {
   return index % 2 === 0 ? step : -step
 }
 
+/**
+ * graph_models node ids are dotted module paths with dots replaced by
+ * underscores (django.contrib.auth.models.Permission →
+ * django_contrib_auth_models_Permission), so when the file has no cluster
+ * subgraphs (graph_models without --group-models) the app is still
+ * recoverable as the prefix before the conventional `models` module.
+ */
+export function inferAppFromId(id: string): string | null {
+  const i = id.indexOf('_models_')
+  return i > 0 ? id.slice(0, i) : null
+}
+
 export function buildGraph(parsed: ParsedDot): ModelGraph {
   const graph: ModelGraph = new MultiGraph()
   const palette = makePalette()
+  // Only infer apps from ids when the file has no clusters at all; mixing
+  // inferred ids with cluster ids would split apps across two palette keys.
+  const noClusters = parsed.nodes.every((n) => n.cluster == null)
 
   for (const raw of parsed.nodes) {
     const parsedLabel = raw.label
@@ -24,7 +39,7 @@ export function buildGraph(parsed: ParsedDot): ModelGraph {
         ? parseModelLabel(raw.label)
         : parsePlainLabel(raw.label)
       : { modelName: raw.id, fields: [], isAbstract: false }
-    const app = raw.cluster ?? null
+    const app = raw.cluster ?? (noClusters ? inferAppFromId(raw.id) : null)
     const appLabel = app
       ? parseClusterLabel(parsed.clusterLabels.get(app) ?? '') || app.replace(/^cluster_/, '')
       : '(ungrouped)'
@@ -64,9 +79,10 @@ export function buildGraph(parsed: ParsedDot): ModelGraph {
     // Edges may reference nodes never declared (defensive for hand-written dot)
     for (const id of [raw.source, raw.target]) {
       if (!graph.hasNode(id)) {
+        const app = noClusters ? inferAppFromId(id) : null
         graph.addNode(id, {
-          label: id, app: null, appLabel: '(ungrouped)', fields: [],
-          isAbstract: false, color: palette(null), size: 3, x: 0, y: 0,
+          label: id, app, appLabel: app ?? '(ungrouped)', fields: [],
+          isAbstract: false, color: palette(app), size: 3, x: 0, y: 0,
         })
       }
     }
