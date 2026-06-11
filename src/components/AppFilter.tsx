@@ -1,7 +1,9 @@
 import { useStore, appKey } from '../state/store'
+import { themedColor } from '../theme'
 
 export default function AppFilter() {
   const apps = useStore((s) => s.apps)
+  const theme = useStore((s) => s.theme)
   const enabledApps = useStore((s) => s.enabledApps)
   const toggleApp = useStore((s) => s.toggleApp)
   const soloApp = useStore((s) => s.soloApp)
@@ -32,7 +34,7 @@ export default function AppFilter() {
                 checked={enabledApps.has(appKey(a.app))}
                 onChange={() => toggleApp(a.app)}
               />
-              <span className="swatch" style={{ background: a.color }} />
+              <span className="swatch" style={{ background: themedColor(a.color, theme) }} />
               <span className="app-filter__name">{a.label}</span>
               <span className="app-filter__count">{a.count}</span>
             </label>

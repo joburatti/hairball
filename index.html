@@ -5,6 +5,18 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>hairball</title>
+    <!-- Resolve the theme before first paint to avoid a flash of the wrong theme.
+         Storage key is duplicated from src/theme.ts (this script can't import TS). -->
+    <script>
+      try {
+        var t =
+          localStorage.getItem('hairball-theme') ||
+          (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
+        document.documentElement.dataset.theme = t
+      } catch (e) {
+        document.documentElement.dataset.theme = 'dark'
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -3,6 +3,7 @@ import { useStore } from '../state/store'
 import { fitView } from '../sigma/camera'
 import { useOpenFile } from './useOpenFile'
 import SearchBar from './SearchBar'
+import ThemeMenu from './ThemeMenu'
 
 interface Props {
   onToggleLayout: () => void
@@ -54,6 +55,7 @@ export default function Toolbar({ onToggleLayout, onTidy }: Props) {
         linLog
       </label>
       <SearchBar />
+      <ThemeMenu />
       <span className="toolbar__meta">
         {fileName} · {graph?.order ?? 0} nodes · {graph?.size ?? 0} edges
       </span>

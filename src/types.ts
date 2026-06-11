@@ -37,11 +37,12 @@ export interface RelationEdgeAttrs {
   size: number
 }
 
-export const RELATION_KIND_META: Record<RelationKind, { label: string; color: string }> = {
-  fk: { label: 'FK', color: '#8a8a93' },
-  m2m: { label: 'M2M', color: '#a78bfa' },
-  o2o: { label: '1:1', color: '#2dd4bf' },
-  inheritance: { label: 'inherits', color: '#60a5fa' },
-  generic: { label: 'generic', color: '#6b6b74' },
-  unknown: { label: '?', color: '#55555e' },
+/** `color` is the canonical baked (dark-theme) value; `lightColor` is its light-theme twin. */
+export const RELATION_KIND_META: Record<RelationKind, { label: string; color: string; lightColor: string }> = {
+  fk: { label: 'FK', color: '#8a8a93', lightColor: '#6e6e78' },
+  m2m: { label: 'M2M', color: '#a78bfa', lightColor: '#7c5ce0' },
+  o2o: { label: '1:1', color: '#2dd4bf', lightColor: '#0d9488' },
+  inheritance: { label: 'inherits', color: '#60a5fa', lightColor: '#2563eb' },
+  generic: { label: 'generic', color: '#6b6b74', lightColor: '#9a9aa4' },
+  unknown: { label: '?', color: '#55555e', lightColor: '#b0b0ba' },
 }

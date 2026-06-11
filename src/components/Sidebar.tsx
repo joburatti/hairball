@@ -1,17 +1,22 @@
 import { useStore } from '../state/store'
 import { RELATION_KIND_META } from '../types'
+import { themedColor } from '../theme'
 import AppFilter from './AppFilter'
 import NodeDetails from './NodeDetails'
 import RelationList from './RelationList'
 
 function Legend() {
+  const theme = useStore((s) => s.theme)
   return (
     <div className="legend">
       <h3>Legend</h3>
       <ul>
         {(['fk', 'm2m', 'o2o', 'inheritance', 'generic'] as const).map((kind) => (
           <li key={kind}>
-            <span className="legend__line" style={{ background: RELATION_KIND_META[kind].color }} />
+            <span
+              className="legend__line"
+              style={{ background: themedColor(RELATION_KIND_META[kind].color, theme) }}
+            />
             {RELATION_KIND_META[kind].label}
           </li>
         ))}

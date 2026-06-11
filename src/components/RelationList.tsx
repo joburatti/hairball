@@ -1,6 +1,7 @@
 import { useStore } from '../state/store'
 import { RELATION_KIND_META, type RelationEdgeAttrs } from '../types'
 import { flyToNode } from '../sigma/camera'
+import { themedColor } from '../theme'
 
 interface RelationRow {
   edge: string
@@ -12,7 +13,9 @@ interface RelationRow {
 function Row({ row }: { row: RelationRow }) {
   const selectNode = useStore((s) => s.selectNode)
   const setHover = useStore((s) => s.setHover)
+  const theme = useStore((s) => s.theme)
   const meta = RELATION_KIND_META[row.attrs.kind]
+  const badgeColor = themedColor(meta.color, theme)
   const badgeText =
     row.attrs.kind === 'inheritance' && row.attrs.inheritanceType
       ? row.attrs.inheritanceType
@@ -26,7 +29,7 @@ function Row({ row }: { row: RelationRow }) {
       onMouseEnter={() => setHover(row.neighbor)}
       onMouseLeave={() => setHover(null)}
     >
-      <span className="badge" style={{ borderColor: meta.color, color: meta.color }}>
+      <span className="badge" style={{ borderColor: badgeColor, color: badgeColor }}>
         {badgeText}
       </span>
       <span className="relation__field">{row.attrs.fieldLabel}</span>

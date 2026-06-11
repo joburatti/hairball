@@ -1,7 +1,9 @@
 import { useStore } from '../state/store'
+import { themedColor } from '../theme'
 
 export default function NodeDetails({ node }: { node: string }) {
   const graph = useStore((s) => s.graph)
+  const theme = useStore((s) => s.theme)
   if (!graph?.hasNode(node)) return null
   const attrs = graph.getNodeAttributes(node)
 
@@ -11,7 +13,7 @@ export default function NodeDetails({ node }: { node: string }) {
         {attrs.label}
         {attrs.isAbstract && <span className="badge badge--abstract">abstract</span>}
       </h2>
-      <span className="app-chip" style={{ background: attrs.color }}>
+      <span className="app-chip" style={{ background: themedColor(attrs.color, theme) }}>
         {attrs.appLabel}
       </span>
       {attrs.fields.length > 0 ? (

@@ -4,6 +4,7 @@ import { EdgeCurvedArrowProgram } from '@sigma/edge-curve'
 import { useStore } from '../state/store'
 import { getActiveSigma, setActiveSigma } from './camera'
 import { makeEdgeReducer, makeNodeReducer, type ReducerState } from './reducers'
+import { CANVAS_THEME } from '../theme'
 
 export default function GraphView() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -13,14 +14,15 @@ export default function GraphView() {
   useEffect(() => {
     if (!graph || !containerRef.current) return
 
+    const initialTheme = CANVAS_THEME[useStore.getState().theme]
     const sigma = new Sigma(graph, containerRef.current, {
       defaultEdgeType: 'arrow',
       edgeProgramClasses: { curvedArrow: EdgeCurvedArrowProgram },
       labelRenderedSizeThreshold: 7,
-      labelColor: { color: '#d7d7dc' },
+      labelColor: { color: initialTheme.label },
       labelFont: 'system-ui, sans-serif',
       labelSize: 12,
-      defaultEdgeColor: '#3a3a40',
+      defaultEdgeColor: initialTheme.defaultEdge,
       zIndex: true,
       minCameraRatio: 0.01,
       maxCameraRatio: 5,
@@ -46,9 +48,15 @@ export default function GraphView() {
         hovered: s.hoveredNode,
         enabledApps: s.enabledApps,
         allAppsEnabled: s.enabledApps.size >= s.apps.length,
+        theme: s.theme,
       }
-      sigma.setSetting('nodeReducer', makeNodeReducer(state))
-      sigma.setSetting('edgeReducer', makeEdgeReducer(state, graph))
+      const ct = CANVAS_THEME[s.theme]
+      sigma.setSettings({
+        nodeReducer: makeNodeReducer(state),
+        edgeReducer: makeEdgeReducer(state, graph),
+        labelColor: { color: ct.label },
+        defaultEdgeColor: ct.defaultEdge,
+      })
       sigma.refresh({ skipIndexation: true })
     }
     applyReducers()
@@ -57,7 +65,8 @@ export default function GraphView() {
       if (
         s.selectedNode !== prev.selectedNode ||
         s.hoveredNode !== prev.hoveredNode ||
-        s.enabledApps !== prev.enabledApps
+        s.enabledApps !== prev.enabledApps ||
+        s.theme !== prev.theme
       ) {
         applyReducers()
       }
